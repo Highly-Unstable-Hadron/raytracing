@@ -52,7 +52,7 @@ impl Object for Sphere {
             point,
             real_normal: normal,
             face: if normal.dot(point) < 0.0 { Face::FrontFace } else { Face::BackFace },
-            fake_normal: if normal.dot(point) < 0.0 { normal } else { -normal },
+            fake_normal: if normal.dot(point) < 0.0 { normal } else { -normal }, // always points opposite to ray
             material: &self.material
         }
     }

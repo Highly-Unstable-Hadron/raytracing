@@ -11,7 +11,6 @@ pub const UNIT_X: Point3 = Point3 {x: 1.0, y: 0.0, z: 0.0};
 pub const UNIT_Y: Point3 = Point3 {x: 0.0, y: 1.0, z: 0.0};
 pub const UNIT_Z: Point3 = Point3 {x: 0.0, y: 0.0, z: 1.0};
 pub const ORIGIN: Point3 = Point3 {x: 0.0, y: 0.0, z: 0.0};
-
 pub const MINIMUM: f64 = 0.000001;
 pub const INFINITY: f64 = f64::INFINITY;
 
@@ -171,9 +170,9 @@ impl Color3 {
     }
     pub fn print_out(&self) {
         let mut gamma_corrected = self.to_point3();
-        // gamma_corrected.x = gamma_corrected.x.powf(0.5);
-        // gamma_corrected.y = gamma_corrected.y.powf(0.5);
-        // gamma_corrected.z = gamma_corrected.z.powf(0.5);
+        gamma_corrected.x = gamma_corrected.x.powf(0.5);
+        gamma_corrected.y = gamma_corrected.y.powf(0.5);
+        gamma_corrected.z = gamma_corrected.z.powf(0.5);
         let c = Color3::from_point3(gamma_corrected);
         println!("{} {} {}", c.r, c.g, c.b);
     }
@@ -190,6 +189,9 @@ pub struct Ray {
 }
 
 impl Ray {
+    pub fn construct(A: Point3, B: Point3) -> Ray {
+        Ray {A: A.unit_vector(), B}
+    }
     pub fn produce(&self, t: f64) -> Point3 {
         self.A * t + self.B
     }
@@ -202,7 +204,7 @@ pub enum Face { // face to camera
 }
 
 pub trait Material {
-    fn scatter(&self, ray: &Ray, hit: &RayHit) -> Ray;
+    fn scatter(&self, ray: &Ray, hit: &RayHit) -> Option<Ray>;
     fn attenuate(&self, color: Color3) -> Color3;
 }
 

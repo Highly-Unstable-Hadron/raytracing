@@ -5,7 +5,7 @@ mod material;
 use utils::{Point3, UNIT_X, UNIT_Y, UNIT_Z, ORIGIN};
 use camera::Camera;
 use object::{World, Sphere};
-use material::{Metallic, Diffuse};
+use material::{Metallic, Diffuse, Dielectric, LightSource};
 
 fn main() {
     let image_width = 512;
@@ -13,20 +13,32 @@ fn main() {
     
     let world = World {
         objects: vec![
+            // ground
             Box::new(Sphere {
-                position: Point3::construct(0.0, 5.0, 0.0),
-                radius: 2.5,
-                material: Box::new(Metallic::construct(0.8, 0.6, 0.2))
-            }), 
-            Box::new(Sphere {
-                position: Point3::construct(0.0, 1.0, -105.5),
+                position: Point3::construct(0.0, 1.0, -100.5),
                 radius: 100.0,
-                material: Box::new(Metallic::construct(0.8, 0.7, 0.7))
+                material: Box::new(Diffuse::construct(0.8, 0.8, 0.0))
             }),
+            // middle
+            Box::new(Sphere {
+                position: Point3::construct(0.0, 1.2, 0.0),
+                radius: 0.5,
+                material: Box::new(Diffuse::construct(0.1, 0.2, 0.5))
+            }),
+            // left
+            Box::new(Sphere {
+                position: Point3::construct(-1.0, 1.0, 0.0),
+                radius: 0.5,
+                material: 
+                // Box::new(LightSource::construct())
+                Box::new(Dielectric {refractive_index: 1.50})
+                // Box::new(Metallic::construct(0.8, 0.8, 0.8, 0.3))
+            }),
+            // right
             Box::new(Sphere {
                 position: Point3::construct(1.0, 1.0, 0.0),
                 radius: 0.5,
-                material: Box::new(Metallic::construct(0.9, 0.6, 0.9))
+                material: Box::new(Metallic::construct(0.8, 0.6, 0.2, 1.0))
             })
         ]
     };

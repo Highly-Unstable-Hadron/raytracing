@@ -22,12 +22,12 @@ impl Viewport {
     pub fn produce_ray(&mut self, i: i32, j: i32, orig: Point3) -> Ray {
         let offset_x: f64 = self.rng.random_range(-0.5..0.5);
         let offset_y: f64 = self.rng.random_range(-0.5..0.5);
-        Ray {
-            A: (self.first_pixel_center + 
-                self.dx*(i as f64 + offset_x) + 
-                self.dy*(j as f64 + offset_y) - orig).unit_vector(), 
-            B: orig
-        }
+        Ray::construct(
+            (self.first_pixel_center + 
+            self.dx*(i as f64 + offset_x) + 
+            self.dy*(j as f64 + offset_y) - orig).unit_vector(), 
+            orig
+        )
     }
 }
 
@@ -42,7 +42,7 @@ pub struct Camera<'a> {
 
 impl Camera<'_> {
     const PIXEL_SAMPLES: i32 = 3; // for anti-aliasing (1 => no anti-aliasing)
-    const SCATTER_DEPTH: i32 = 5;
+    const SCATTER_DEPTH: i32 = 10;
     fn header_ascii_ppm(&self) {
         println!("P3\n{} {}", self.image_width, self.image_height);
         println!("255");
@@ -92,7 +92,7 @@ impl Camera<'_> {
         for _ in 0..Self::SCATTER_DEPTH {
             let RayHit::Hit {material, ..} = hit else { break; };
             color = material.attenuate(color);
-            scattered_ray = material.scatter(&scattered_ray, &hit);
+            let Some(scattered_ray) = material.scatter(&scattered_ray, &hit) else { break; };
             hit = self.world.hit(&scattered_ray, (MINIMUM, INFINITY));
         }
 
