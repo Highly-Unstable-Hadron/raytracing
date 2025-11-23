@@ -157,6 +157,7 @@ pub struct Color3 {
 }
 
 impl Color3 {
+    const GAMMA_CORRECT: bool = true;
     pub fn construct(r_: f64, g_: f64, b_: f64) -> Color3 {
         for c in vec![r_, g_, b_] {
             if c < 0.0 || c > 1.0 {
@@ -170,9 +171,11 @@ impl Color3 {
     }
     pub fn print_out(&self) {
         let mut gamma_corrected = self.to_point3();
-        gamma_corrected.x = gamma_corrected.x.powf(0.5);
-        gamma_corrected.y = gamma_corrected.y.powf(0.5);
-        gamma_corrected.z = gamma_corrected.z.powf(0.5);
+        if Self::GAMMA_CORRECT {
+            gamma_corrected.x = gamma_corrected.x.powf(0.5);
+            gamma_corrected.y = gamma_corrected.y.powf(0.5);
+            gamma_corrected.z = gamma_corrected.z.powf(0.5);
+        }
         let c = Color3::from_point3(gamma_corrected);
         println!("{} {} {}", c.r, c.g, c.b);
     }
@@ -181,7 +184,7 @@ impl Color3 {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Copy, Debug, Clone)]
 pub struct Ray {
     pub A: Point3,
     pub B: Point3
