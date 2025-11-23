@@ -78,17 +78,22 @@ impl Material for Dielectric {
             Face::FrontFace => 1.0/self.refractive_index,
             Face::BackFace => self.refractive_index
         };
-        let refracted_y = fake_normal.cross(ray.A.cross(fake_normal) * refractive_ratio);
-        let refracted_x = -fake_normal * (1.0 - refracted_y.norm_square()).powf(0.5);
+        let sin = ray.A.cross(-fake_normal).norm();
+        let cos = ray.A.dot(-fake_normal);
 
-        let ratio_of_sines = (refracted_x + refracted_y).cross(fake_normal).norm() / ray.A.cross(fake_normal).norm();
-        if ratio_of_sines > refractive_ratio + 0.0001 || ratio_of_sines < refractive_ratio - 0.0001 {
-            panic!("sine ratio {:?} and refractive ratio {:?}", ratio_of_sines, refractive_ratio);
-        }
-        if (refracted_x + refracted_y).dot(ray.A) <= 0.0 {
-            panic!("refracted vec {:#?}, ray {:#?}, dot product {:#?}", (refracted_x + refracted_y), ray.A, (refracted_x + refracted_y).dot(ray.A))
-        }
-        Some(Ray::construct(refracted_x + refracted_y, point))
+        let reflectance = { // schlick's approximation
+            let r = ((1.0 - refractive_ratio)/(1.0 + refractive_ratio)).powf(2.0);
+            r + (1.0 - r)*(1.0 - cos).powf(5.0)
+        };
+        let refracted = if sin * refractive_ratio > 1.0 || reflectance > rand::random_range(0.0..=1.0) {
+            ray.A - fake_normal*fake_normal.dot(ray.A)*2.0  // total internal reflection
+        } else {
+            let refracted_y = fake_normal.cross(ray.A.cross(fake_normal) * refractive_ratio);
+            let refracted_x = -fake_normal * (1.0 - refracted_y.norm_square()).powf(0.5);
+            refracted_x + refracted_y
+        };
+
+        Some(Ray::construct(refracted, point))
     }
 
     fn attenuate(&self, color: Color3) -> Color3 {
