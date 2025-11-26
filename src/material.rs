@@ -96,7 +96,7 @@ impl Material for Dielectric {
         Some(Ray::construct(refracted, point))
     }
 
-    fn attenuate(&self, color: Color3) -> Color3 {
+    fn attenuate(&self, color: Color3) -> Color3 { // TODO: tinted glass?
         color
     }
 }

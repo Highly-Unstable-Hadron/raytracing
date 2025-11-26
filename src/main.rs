@@ -4,7 +4,7 @@ mod object;
 mod material;
 use utils::{Point3, UNIT_Y, ORIGIN};
 use camera::Camera;
-use object::{World, Sphere};
+use object::{World, Sphere, Triangle, Plane};
 use material::{Metallic, Diffuse, Dielectric, LightSource};
 
 fn main() {
@@ -16,11 +16,19 @@ fn main() {
     let world = World {
         objects: vec![
             // ground
-            Box::new(Sphere {
-                position: Point3::construct(0.0, 1.0, -100.5),
-                radius: 100.0,
-                material: Box::new(Diffuse::construct(0.8, 0.8, 0.0))
-            }),
+            Box::new(
+                Triangle {  // uh its a plane
+                    material: Box::new(Diffuse::construct(0.8, 0.8, 0.0)),
+                    // Box::new(Dielectric {refractive_index: 1.5}),
+                    // Box::new(Metallic::construct(0.8, 0.8, 0.0, 0.1)),
+                    plane: Plane::construct(0.0, 0.0, -0.5, Point3 {x: 0.0, y: 0.0, z: -2.0})
+                }
+            ),
+            // Box::new(Sphere {
+            //     position: Point3::construct(0.0, 1.0, -100.5),
+            //     radius: 100.0,
+            //     material: Box::new(Diffuse::construct(0.8, 0.8, 0.0))
+            // }),
             // middle
             Box::new(Sphere {
                 position: Point3::construct(0.0, 1.2, 0.0),
@@ -46,7 +54,7 @@ fn main() {
             Box::new(Sphere {
                 position: Point3::construct(1.0, 1.0, 0.0),
                 radius: 0.5,
-                material: Box::new(Metallic::construct(0.8, 0.6, 0.2, 1.0))
+                material: Box::new(Metallic::construct(0.8, 0.6, 0.2, 0.1))
             })
         ]
     };
