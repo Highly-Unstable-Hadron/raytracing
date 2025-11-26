@@ -50,9 +50,8 @@ impl Object for Sphere {
         RayHit::Hit{
             t,
             point,
-            real_normal: normal,
             face: if normal.dot(point) < 0.0 { Face::FrontFace } else { Face::BackFace },
-            fake_normal: if normal.dot(point) < 0.0 { normal } else { -normal }, // always points opposite to ray
+            normal: if normal.dot(point) < 0.0 { normal } else { -normal }, // always points opposite to ray
             material: &self.material
         }
     }
@@ -137,8 +136,7 @@ impl Object for Triangle {
         RayHit::Hit {
             t,
             point,
-            real_normal: normal,
-            fake_normal: if normal.dot(point) < 0.0 { normal } else { -normal },
+            normal: if normal.dot(point) < 0.0 { normal } else { -normal },
             face: if normal.dot(point) < 0.0 { Face::FrontFace } else { Face::BackFace },
             material: &self.material
         }

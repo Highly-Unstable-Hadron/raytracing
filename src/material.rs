@@ -18,10 +18,10 @@ impl Metallic {
 
 impl Material for Metallic {
     fn scatter(&self, ray: &Ray, hit: &RayHit) -> Option<Ray> {
-        let RayHit::Hit {fake_normal, point, ..} = *hit else { panic!("metallic scatter attempted on a NoHit") };
-        let mut reflected_vec = ray.A - fake_normal*fake_normal.dot(ray.A)*2.0;
+        let RayHit::Hit {normal, point, ..} = *hit else { panic!("metallic scatter attempted on a NoHit") };
+        let mut reflected_vec = ray.A - normal*normal.dot(ray.A)*2.0;
         if reflected_vec.norm() < MINIMUM {
-            reflected_vec = fake_normal;
+            reflected_vec = normal;
         }
         let random_vec = Point3 {x: rand::random(), y: rand::random(), z: rand::random()}; // TODO: INEFFICIENT
         reflected_vec = reflected_vec.unit_vector() + random_vec.unit_vector() * self.fuzz;
@@ -51,12 +51,12 @@ impl Diffuse {
 
 impl Material for Diffuse {
     fn scatter(&self, _ray: &Ray, hit: &RayHit) -> Option<Ray> {
-        let RayHit::Hit {fake_normal, point, ..} = *hit else { panic!("diffuse scatter attempted on a NoHit") };
+        let RayHit::Hit {normal, point, ..} = *hit else { panic!("diffuse scatter attempted on a NoHit") };
         let mut random_vec = Point3 {x: rand::random(), y: rand::random(), z: rand::random()}; // TODO: INEFFICIENT
-        random_vec = random_vec.unit_vector() + fake_normal;
+        random_vec = random_vec.unit_vector() + normal;
         
         if random_vec.norm() < MINIMUM && random_vec.norm() >= INFINITY {
-            random_vec = fake_normal;
+            random_vec = normal;
         }
 
         Some(Ray::construct(random_vec, point))
@@ -73,23 +73,23 @@ pub struct Dielectric {
 
 impl Material for Dielectric {
     fn scatter(&self, ray: &Ray, hit: &RayHit) -> Option<Ray> {
-        let RayHit::Hit {fake_normal, point, face, ..} = *hit else { panic!("diffuse scatter attempted on a NoHit") };
+        let RayHit::Hit {normal, point, face, ..} = *hit else { panic!("diffuse scatter attempted on a NoHit") };
         let refractive_ratio = match face {
             Face::FrontFace => 1.0/self.refractive_index,
             Face::BackFace => self.refractive_index
         };
-        let sin = ray.A.cross(-fake_normal).norm();
-        let cos = ray.A.dot(-fake_normal);
+        let sin = ray.A.cross(-normal).norm();
+        let cos = ray.A.dot(-normal);
 
         let reflectance = { // schlick's approximation
             let r = ((1.0 - refractive_ratio)/(1.0 + refractive_ratio)).powf(2.0);
             r + (1.0 - r)*(1.0 - cos).powf(5.0)
         };
         let refracted = if sin * refractive_ratio > 1.0 || reflectance > rand::random_range(0.0..=1.0) {
-            ray.A - fake_normal*fake_normal.dot(ray.A)*2.0  // total internal reflection
+            ray.A - normal*normal.dot(ray.A)*2.0  // total internal reflection
         } else {
-            let refracted_y = fake_normal.cross(ray.A.cross(fake_normal) * refractive_ratio);
-            let refracted_x = -fake_normal * (1.0 - refracted_y.norm_square()).powf(0.5);
+            let refracted_y = normal.cross(ray.A.cross(normal) * refractive_ratio);
+            let refracted_x = -normal * (1.0 - refracted_y.norm_square()).powf(0.5);
             refracted_x + refracted_y
         };
 
@@ -112,11 +112,11 @@ impl LightSource {
 }
 
 impl Material for LightSource {
-    fn scatter(&self, ray: &Ray, hit: &RayHit) -> Option<Ray> {
+    fn scatter(&self, _ray: &Ray, _hit: &RayHit) -> Option<Ray> {
         None
     }
 
-    fn attenuate(&self, color: Color3) -> Color3 {
+    fn attenuate(&self, _color: Color3) -> Color3 {
         self.color
     }
 }

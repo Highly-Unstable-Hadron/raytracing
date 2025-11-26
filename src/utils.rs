@@ -216,8 +216,7 @@ pub enum RayHit<'a> {
     Hit {
         t: f64,
         point: Point3,
-        real_normal: Point3,
-        fake_normal: Point3,
+        normal: Point3,
         face: Face,
         material: &'a Box<dyn Material>
     },
